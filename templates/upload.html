@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload File</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        h1 {
+            color: #333;
+        }
+        .dropzone {
+            border: 2px dashed #0066cc;
+            border-radius: 8px;
+            padding: 60px;
+            text-align: center;
+            color: #666;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            max-width: 500px;
+        }
+        .dropzone.dragover {
+            background-color: #e8f0fe;
+            border-color: #004499;
+        }
+        .dropzone p {
+            margin: 0 0 16px;
+        }
+        .dropzone input[type="file"] {
+            display: none;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 4px;
+            display: none;
+            max-width: 500px;
+        }
+        #status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        #status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        #progress {
+            margin-top: 20px;
+            height: 4px;
+            background-color: #eee;
+            border-radius: 2px;
+            max-width: 500px;
+            display: none;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #0066cc;
+            border-radius: 2px;
+            transition: width 0.1s;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        #submitBtn {
+            margin-top: 20px;
+            padding: 10px 24px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+            max-width: 500px;
+        }
+        #submitBtn:hover {
+            background-color: #004499;
+        }
+        #submitBtn:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+        #fileName {
+            margin-top: 16px;
+            color: #333;
+            font-weight: bold;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload File</h1>
+    <div class="dropzone" id="dropzone">
+        <p>Drag &amp; drop a file here</p>
+        <p>or click to select</p>
+        <input type="file" id="fileInput">
+    </div>
+    <div id="fileName"></div>
+    <button id="submitBtn">Upload</button>
+    <div id="progress"><div id="progress-bar"></div></div>
+    <div id="status"></div>
+    <a href="/files" class="back-link">&larr; Back to file list</a>
+
+    <script>
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const status = document.getElementById('status');
+        const progress = document.getElementById('progress');
+        const progressBar = document.getElementById('progress-bar');
+        const submitBtn = document.getElementById('submitBtn');
+        const fileName = document.getElementById('fileName');
+        let selectedFile = null;
+
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                selectFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                selectFile(fileInput.files[0]);
+            }
+        });
+
+        submitBtn.addEventListener('click', () => {
+            if (selectedFile) {
+                uploadFile(selectedFile);
+            }
+        });
+
+        function selectFile(file) {
+            selectedFile = file;
+            fileName.textContent = file.name;
+            submitBtn.style.display = 'inline-block';
+            status.style.display = 'none';
+            progress.style.display = 'none';
+        }
+
+        function uploadFile(file) {
+            status.style.display = 'none';
+            progress.style.display = 'block';
+            progressBar.style.width = '0%';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/upload', true);
+
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const pct = (e.loaded / e.total) * 100;
+                    progressBar.style.width = pct + '%';
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                progress.style.display = 'none';
+                status.style.display = 'block';
+                if (xhr.status === 200) {
+                    status.className = 'success';
+                    status.textContent = xhr.responseText;
+                } else {
+                    status.className = 'error';
+                    status.textContent = xhr.responseText || 'Upload failed';
+                }
+            });
+
+            xhr.addEventListener('error', () => {
+                progress.style.display = 'none';
+                status.style.display = 'block';
+                status.className = 'error';
+                status.textContent = 'Upload failed';
+            });
+
+            xhr.send(formData);
+        }
+    </script>
+</body>
+</html>

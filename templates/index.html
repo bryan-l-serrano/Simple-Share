@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 800px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 14px;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 4px;
+            display: none;
+            max-width: 800px;
+        }
+        #status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        #status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Files</h1>
+    <a href="/upload">Upload a file</a>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Size</th>
+                <th>Modified</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for file in files %}
+            <tr>
+                <td><a href="/files?path={{ file.name }}">{{ file.name }}</a></td>
+                <td>{{ file.size | filesizeformat }}</td>
+                <td>{{ file.modified }}</td>
+                <td><button class="delete-btn" data-name="{{ file.name }}">Delete</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+   </table>
+    <div id="status"></div>
+
+    <script>
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const fileName = btn.getAttribute('data-name');
+                const status = document.getElementById('status');
+
+                if (!confirm(`Delete "${fileName}"?`)) return;
+
+                try {
+                    const response = await fetch(`/files/${encodeURIComponent(fileName)}`, {
+                        method: 'DELETE'
+                    });
+                    const text = await response.text();
+
+                    if (response.ok) {
+                        status.className = 'success';
+                        status.textContent = text;
+                        btn.closest('tr').remove();
+                    } else {
+                        status.className = 'error';
+                        status.textContent = text;
+                    }
+                    status.style.display = 'block';
+                } catch (err) {
+                    status.className = 'error';
+                    status.textContent = 'Delete failed';
+                    status.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
