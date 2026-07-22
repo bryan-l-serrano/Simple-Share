@@ -16,7 +16,7 @@ A simple Flask web application for browsing and uploading files.
 docker compose up --build
 ```
 
-The app will be available at http://localhost:3000.
+The app will be available at http://localhost:3000/files.
 
 ### With Docker
 
@@ -45,7 +45,8 @@ upload_folder: "./share"
 
 | Method | Path       | Description              |
 |--------|------------|--------------------------|
-| GET    | /files     | List files               |
+| GET    | /          | Redirect to /files       |
+| GET    | /files     | List files (landing page)|
 | GET    | /upload    | Upload form              |
 | POST   | /upload    | Upload a file            |
 | DELETE | /files/{f} | Delete a file            |

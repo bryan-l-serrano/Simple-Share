@@ -1,4 +1,4 @@
-from flask import Flask, request, send_from_directory, render_template
+from flask import Flask, request, send_from_directory, render_template, redirect
 import os
 import yaml
 from datetime import datetime
@@ -10,6 +10,10 @@ UPLOAD_FOLDER = os.path.abspath(config['upload_folder'])
 app = Flask(__name__, template_folder='templates')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+
+@app.route('/')
+def index_redirect():
+    return redirect('/files')
 
 @app.route('/files', methods=['GET'])
 def serve_files():
