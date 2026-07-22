@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  ftp:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - ./share:/app/share
+    restart: unless-stopped
