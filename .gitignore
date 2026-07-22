@@ -1,0 +1,33 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Config files with sensitive data
+config.yaml
+
+# Share folder
+share/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
